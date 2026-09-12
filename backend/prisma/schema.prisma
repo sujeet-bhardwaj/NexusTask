@@ -1,0 +1,172 @@
+// Prisma schema for Task & Engagement Management Tool
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  TEAM_MEMBER
+}
+
+enum Frequency {
+  ONE_TIME
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum EngagementStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  WAITING_FOR_CLIENT
+  READY_FOR_REVIEW
+  CHANGES_REQUESTED
+  COMPLETED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model User {
+  id                 String          @id @default(cuid())
+  name               String
+  email              String          @unique
+  password           String
+  role               Role            @default(TEAM_MEMBER)
+  title              String
+  avatar             String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  createdEngagements Engagement[]    @relation("CreatedEngagements")
+  assignedTasks      Task[]          @relation("AssignedTasks")
+  auditLogs          TaskAuditLog[]  @relation("UserAuditLogs")
+}
+
+model Client {
+  id          String        @id @default(cuid())
+  name        String
+  companyName String
+  email       String
+  phone       String?
+  address     String?
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  engagements Engagement[]
+}
+
+model ServiceType {
+  id          String         @id @default(cuid())
+  name        String         @unique
+  code        String?        @unique
+  description String?
+  isRecurring Boolean        @default(false)
+  frequency   Frequency      @default(ONE_TIME)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  taskTemplates TaskTemplate[]
+  engagements   Engagement[]
+}
+
+model TaskTemplate {
+  id                       String       @id @default(cuid())
+  serviceTypeId            String
+  title                    String
+  description              String?
+  orderIndex               Int          @default(0)
+  defaultDeadlineOffsetDays Int         @default(7)
+  createdAt                DateTime     @default(now())
+  updatedAt                DateTime     @updatedAt
+
+  serviceType              ServiceType  @relation(fields: [serviceTypeId], references: [id], onDelete: Cascade)
+  tasks                    Task[]
+
+  @@index([serviceTypeId])
+}
+
+model Engagement {
+  id            String           @id @default(cuid())
+  title         String
+  clientId      String
+  serviceTypeId String
+  createdById   String
+  status        EngagementStatus @default(ACTIVE)
+  period        String           @default("ONE_TIME") // E.g. "2026-09", "2026-10", "2026-Q3", or "ONE_TIME"
+  startDate     DateTime         @default(now())
+  targetDate    DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  client        Client           @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  serviceType   ServiceType      @relation(fields: [serviceTypeId], references: [id], onDelete: Restrict)
+  createdBy     User             @relation("CreatedEngagements", fields: [createdById], references: [id])
+  tasks         Task[]
+
+  // Critical constraint: prevents duplicate recurring engagements for same client, service, and period!
+  @@unique([clientId, serviceTypeId, period])
+  @@index([clientId])
+  @@index([serviceTypeId])
+  @@index([status])
+}
+
+model Task {
+  id           String       @id @default(cuid())
+  engagementId String
+  templateId   String?
+  title        String
+  description  String?
+  assignedToId String?
+  status       TaskStatus   @default(NOT_STARTED)
+  priority     Priority     @default(MEDIUM)
+  dueDate      DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  engagement   Engagement   @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  template     TaskTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  assignedTo   User?        @relation("AssignedTasks", fields: [assignedToId], references: [id], onDelete: SetNull)
+  auditLogs    TaskAuditLog[]
+
+  @@index([engagementId])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model TaskAuditLog {
+  id          String      @id @default(cuid())
+  taskId      String
+  changedById String
+  action      String      // "STATUS_CHANGE", "ASSIGNMENT", "DEADLINE_CHANGE", "APPROVAL", "CHANGES_REQUESTED", "CREATION"
+  oldStatus   TaskStatus?
+  newStatus   TaskStatus?
+  notes       String?
+  createdAt   DateTime    @default(now())
+
+  task        Task        @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  changedBy   User        @relation("UserAuditLogs", fields: [changedById], references: [id])
+
+  @@index([taskId])
+  @@index([changedById])
+}

@@ -1,0 +1,20 @@
+{
+  "name": "task-engagement-management-system",
+  "version": "1.0.0",
+  "description": "Task & Engagement Management Tool for Professional Services Team",
+  "scripts": {
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "test": "npm --prefix backend run test",
+    "seed": "npm --prefix backend run seed",
+    "setup": "npm --prefix backend install && npm --prefix backend run db:generate && npm --prefix backend run db:push && npm --prefix backend run seed && npm --prefix frontend install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
