@@ -7,17 +7,17 @@ import { EngagementsPage } from './pages/EngagementsPage';
 import { AdminPage } from './pages/AdminPage';
 import { TaskModal } from './components/TaskModal';
 
-export const AppContent: React.FC = () => {
-  const [currentTab, setCurrentTab] = useState<'dashboard' | 'tasks' | 'engagements' | 'admin'>('dashboard');
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [tasksFilterMode, setTasksFilterMode] = useState<string>('all');
-  const [refreshKey, setRefreshKey] = useState<number>(0);
+export const AppContent = () => {
+  const [currentTab, setCurrentTab] = useState('dashboard');
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [tasksFilterMode, setTasksFilterMode] = useState('all');
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const triggerRefresh = () => {
     setRefreshKey((prev) => prev + 1);
   };
 
-  const handleNavigateToTasksWithFilter = (filter?: string) => {
+  const handleNavigateToTasksWithFilter = (filter) => {
     if (filter) setTasksFilterMode(filter);
     setCurrentTab('tasks');
   };
@@ -65,7 +65,7 @@ export const AppContent: React.FC = () => {
   );
 };
 
-export const App: React.FC = () => {
+export const App = () => {
   return (
     <AuthProvider>
       <AppContent />

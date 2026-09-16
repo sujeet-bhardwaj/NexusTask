@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Task, User, TaskStatus } from '../types';
-import { api, ApiError } from '../api/client';
+import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { 
   X, 
@@ -11,37 +10,28 @@ import {
   CheckCircle2, 
   RotateCcw, 
   Send, 
-  HelpCircle,
-  FileEdit,
   ShieldCheck
 } from 'lucide-react';
 
-interface TaskModalProps {
-  taskId: string | null;
-  onClose: () => void;
-  onTaskUpdated: () => void;
-}
-
-export const TaskModal: React.FC<TaskModalProps> = ({ taskId, onClose, onTaskUpdated }) => {
+export const TaskModal = ({ taskId, onClose, onTaskUpdated }) => {
   const { user: currentUser, allUsers } = useAuth();
-  const [task, setTask] = useState<Task | null>(null);
+  const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [error, setError] = useState(null);
+  const [successMsg, setSuccessMsg] = useState(null);
 
   // Transition form state
   const [reviewNotes, setReviewNotes] = useState('');
   const [showNotesPrompt, setShowNotesPrompt] = useState(false);
-  const [pendingTargetStatus, setPendingTargetStatus] = useState<TaskStatus | null>(null);
+  const [pendingTargetStatus, setPendingTargetStatus] = useState(null);
 
   // Assignment edit state (Manager / Admin)
-  const [selectedAssigneeId, setSelectedAssigneeId] = useState<string>('');
-  const [selectedDueDate, setSelectedDueDate] = useState<string>('');
-  const [selectedPriority, setSelectedPriority] = useState<string>('MEDIUM');
+  const [selectedAssigneeId, setSelectedAssigneeId] = useState('');
+  const [selectedDueDate, setSelectedDueDate] = useState('');
+  const [selectedPriority, setSelectedPriority] = useState('MEDIUM');
 
   const isManagerOrAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'MANAGER';
-  const isAssignedToCurrent = task?.assignedToId === currentUser?.id;
 
   const loadTask = async () => {
     if (!taskId) return;
@@ -53,7 +43,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, onClose, onTaskUpd
       setSelectedAssigneeId(data.assignedToId || '');
       setSelectedDueDate(data.dueDate ? data.dueDate.split('T')[0] : '');
       setSelectedPriority(data.priority || 'MEDIUM');
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || 'Failed to load task details');
     } finally {
       setLoading(false);
@@ -66,7 +56,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, onClose, onTaskUpd
 
   if (!taskId) return null;
 
-  const handleInitiateTransition = (status: TaskStatus, requiresNotes = false) => {
+  const handleInitiateTransition = (status, requiresNotes = false) => {
     if (requiresNotes) {
       setPendingTargetStatus(status);
       setShowNotesPrompt(true);
@@ -76,7 +66,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, onClose, onTaskUpd
     }
   };
 
-  const executeTransition = async (targetStatus: TaskStatus, notes?: string) => {
+  const executeTransition = async (targetStatus, notes) => {
     try {
       setActionLoading(true);
       setError(null);
@@ -86,7 +76,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, onClose, onTaskUpd
       setShowNotesPrompt(false);
       await loadTask();
       onTaskUpdated();
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || 'Transition failed');
     } finally {
       setActionLoading(false);
@@ -106,14 +96,14 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, onClose, onTaskUpd
       setSuccessMsg('Assignment & deadline updated successfully');
       await loadTask();
       onTaskUpdated();
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || 'Failed to update assignment');
     } finally {
       setActionLoading(false);
     }
   };
 
-  const formatStatus = (s: string) => s.replace(/_/g, ' ');
+  const formatStatus = (s) => (s ? s.replace(/_/g, ' ') : '');
 
   return (
     <div className="modal-overlay" onClick={onClose}>

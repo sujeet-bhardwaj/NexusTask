@@ -1,22 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User } from '../types';
 import { api } from '../api/client';
 
-interface AuthContextType {
-  user: User | null;
-  allUsers: User[];
-  loading: boolean;
-  login: (email: string, pass: string) => Promise<void>;
-  logout: () => void;
-  switchUser: (userId: string) => Promise<void>;
-  refreshUsers: () => Promise<void>;
-}
+const AuthContext = createContext(undefined);
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [allUsers, setAllUsers] = useState<User[]>([]);
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const refreshUsers = async () => {
@@ -25,6 +14,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setAllUsers(users);
     } catch (err) {
       console.error('Failed to fetch user list', err);
+    }
+  };
+
+  const loginAsDefaultManager = async () => {
+    try {
+      const res = await api.login('sarah.connor@services.com', 'password123');
+      api.setToken(res.token);
+      setUser(res.user);
+      await refreshUsers();
+    } catch (err) {
+      console.error('Default login failed', err);
     }
   };
 
@@ -51,18 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initAuth();
   }, []);
 
-  const loginAsDefaultManager = async () => {
-    try {
-      const res = await api.login('sarah.connor@services.com', 'password123');
-      api.setToken(res.token);
-      setUser(res.user);
-      await refreshUsers();
-    } catch (err) {
-      console.error('Default login failed', err);
-    }
-  };
-
-  const login = async (email: string, pass: string) => {
+  const login = async (email, pass) => {
     const res = await api.login(email, pass);
     api.setToken(res.token);
     setUser(res.user);
@@ -74,7 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   };
 
-  const switchUser = async (userId: string) => {
+  const switchUser = async (userId) => {
     try {
       setLoading(true);
       const res = await api.switchDemo(userId);

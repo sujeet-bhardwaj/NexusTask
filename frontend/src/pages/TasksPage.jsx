@@ -1,38 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Task, User, TaskStatus } from '../types';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { 
   Search, 
-  Filter, 
-  Plus, 
   Clock, 
-  User as UserIcon, 
-  AlertTriangle, 
-  CheckCircle, 
   Layers
 } from 'lucide-react';
 
-interface TasksPageProps {
-  initialFilter?: string;
-  onSelectTask: (taskId: string) => void;
-  refreshKey: number;
-}
-
-export const TasksPage: React.FC<TasksPageProps> = ({ 
+export const TasksPage = ({ 
   initialFilter, 
   onSelectTask,
   refreshKey 
 }) => {
   const { user, allUsers } = useAuth();
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Filters
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const [filterMode, setFilterMode] = useState<string>(initialFilter || 'all');
-  const [assigneeFilter, setAssigneeFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [filterMode, setFilterMode] = useState(initialFilter || 'all');
+  const [assigneeFilter, setAssigneeFilter] = useState('');
 
   useEffect(() => {
     if (initialFilter) {
@@ -43,7 +31,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({
   const loadTasks = async () => {
     try {
       setLoading(true);
-      const params: Record<string, string> = {};
+      const params = {};
       if (search) params.search = search;
       if (statusFilter) params.status = statusFilter;
       if (assigneeFilter) params.assignedToId = assigneeFilter;
@@ -62,14 +50,14 @@ export const TasksPage: React.FC<TasksPageProps> = ({
     loadTasks();
   }, [search, statusFilter, filterMode, assigneeFilter, user, refreshKey]);
 
-  const isOverdue = (task: Task) => {
+  const isOverdue = (task) => {
     if (!task.dueDate || task.status === 'COMPLETED') return false;
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     return new Date(task.dueDate) < startOfToday;
   };
 
-  const isDueToday = (task: Task) => {
+  const isDueToday = (task) => {
     if (!task.dueDate || task.status === 'COMPLETED') return false;
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -78,7 +66,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({
     return d >= startOfToday && d <= endOfToday;
   };
 
-  const formatStatus = (s: string) => s.replace(/_/g, ' ');
+  const formatStatus = (s) => (s ? s.replace(/_/g, ' ') : '');
 
   return (
     <div>
@@ -214,10 +202,10 @@ export const TasksPage: React.FC<TasksPageProps> = ({
 
                   <div className="task-meta">
                     <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
-                      {task.engagement?.client.companyName}
+                      {task.engagement?.client?.companyName}
                     </span>
                     <span>
-                      {task.engagement?.serviceType.name} ({task.engagement?.period})
+                      {task.engagement?.serviceType?.name} ({task.engagement?.period})
                     </span>
 
                     {task.dueDate && (

@@ -1,5 +1,4 @@
 import React from 'react';
-import { DashboardMetrics } from '../types';
 import { 
   FolderKanban, 
   AlertTriangle, 
@@ -9,13 +8,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 
-interface MetricsCardsProps {
-  metrics: DashboardMetrics | null;
-  activeFilter?: string;
-  onSelectFilter?: (filter: string) => void;
-}
-
-export const MetricsCards: React.FC<MetricsCardsProps> = ({ 
+export const MetricsCards = ({ 
   metrics, 
   activeFilter, 
   onSelectFilter 

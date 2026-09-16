@@ -1,19 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Client, ServiceType } from '../types';
 import { api } from '../api/client';
-import { X, AlertCircle, CheckCircle2, ListPlus } from 'lucide-react';
+import { X, AlertCircle, ListPlus } from 'lucide-react';
 
-interface NewEngagementModalProps {
-  onClose: () => void;
-  onSuccess: () => void;
-}
-
-export const NewEngagementModal: React.FC<NewEngagementModalProps> = ({ onClose, onSuccess }) => {
-  const [clients, setClients] = useState<Client[]>([]);
-  const [services, setServices] = useState<ServiceType[]>([]);
+export const NewEngagementModal = ({ onClose, onSuccess }) => {
+  const [clients, setClients] = useState([]);
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
   // Form fields
   const [clientId, setClientId] = useState('');
@@ -34,7 +28,7 @@ export const NewEngagementModal: React.FC<NewEngagementModalProps> = ({ onClose,
           setServiceTypeId(sv[0].id);
           updateDefaultsForService(sv[0], cl[0]);
         }
-      } catch (err: any) {
+      } catch (err) {
         setError(err.message || 'Failed to fetch clients or services');
       } finally {
         setLoading(false);
@@ -43,7 +37,7 @@ export const NewEngagementModal: React.FC<NewEngagementModalProps> = ({ onClose,
     fetchData();
   }, []);
 
-  const updateDefaultsForService = (service: ServiceType, client?: Client) => {
+  const updateDefaultsForService = (service, client) => {
     const clientName = client ? client.companyName : '';
     if (service.isRecurring) {
       const now = new Date();
@@ -58,21 +52,21 @@ export const NewEngagementModal: React.FC<NewEngagementModalProps> = ({ onClose,
     }
   };
 
-  const handleClientChange = (cId: string) => {
+  const handleClientChange = (cId) => {
     setClientId(cId);
     const client = clients.find((c) => c.id === cId);
     const service = services.find((s) => s.id === serviceTypeId);
     if (service) updateDefaultsForService(service, client);
   };
 
-  const handleServiceChange = (sId: string) => {
+  const handleServiceChange = (sId) => {
     setServiceTypeId(sId);
     const service = services.find((s) => s.id === sId);
     const client = clients.find((c) => c.id === clientId);
     if (service) updateDefaultsForService(service, client);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setSubmitting(true);
@@ -86,7 +80,7 @@ export const NewEngagementModal: React.FC<NewEngagementModalProps> = ({ onClose,
         targetDate: targetDate ? new Date(targetDate).toISOString() : undefined,
       });
       onSuccess();
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || 'Failed to create engagement');
     } finally {
       setSubmitting(false);

@@ -5,20 +5,13 @@ import {
   CheckSquare, 
   Briefcase, 
   Settings, 
-  UserCheck, 
-  ShieldAlert,
   Sparkles
 } from 'lucide-react';
 
-interface NavbarProps {
-  currentTab: 'dashboard' | 'tasks' | 'engagements' | 'admin';
-  setCurrentTab: (tab: 'dashboard' | 'tasks' | 'engagements' | 'admin') => void;
-}
-
-export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab }) => {
+export const Navbar = ({ currentTab, setCurrentTab }) => {
   const { user, allUsers, switchUser } = useAuth();
 
-  const getRoleBadgeClass = (role?: string) => {
+  const getRoleBadgeClass = (role) => {
     switch (role) {
       case 'ADMIN': return 'role-admin';
       case 'MANAGER': return 'role-manager';

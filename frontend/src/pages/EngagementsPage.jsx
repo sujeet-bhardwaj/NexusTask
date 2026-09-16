@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Engagement } from '../types';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { NewEngagementModal } from '../components/NewEngagementModal';
@@ -8,30 +7,21 @@ import {
   Plus, 
   Repeat, 
   CheckCircle2, 
-  Clock, 
   AlertCircle, 
-  Calendar,
-  Layers,
-  ArrowRight
+  Calendar
 } from 'lucide-react';
 
-interface EngagementsPageProps {
-  onSelectTask: (taskId: string) => void;
-  refreshKey: number;
-  triggerRefresh: () => void;
-}
-
-export const EngagementsPage: React.FC<EngagementsPageProps> = ({ 
+export const EngagementsPage = ({ 
   onSelectTask, 
   refreshKey,
   triggerRefresh 
 }) => {
   const { user } = useAuth();
-  const [engagements, setEngagements] = useState<Engagement[]>([]);
+  const [engagements, setEngagements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showNewModal, setShowNewModal] = useState(false);
-  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
-  const [message, setMessage] = useState<{ text: string; isError: boolean } | null>(null);
+  const [actionLoadingId, setActionLoadingId] = useState(null);
+  const [message, setMessage] = useState(null);
 
   const isManagerOrAdmin = user?.role === 'ADMIN' || user?.role === 'MANAGER';
 
@@ -51,7 +41,7 @@ export const EngagementsPage: React.FC<EngagementsPageProps> = ({
     loadEngagements();
   }, [refreshKey]);
 
-  const handleGenerateNextPeriod = async (engagement: Engagement) => {
+  const handleGenerateNextPeriod = async (engagement) => {
     try {
       setActionLoadingId(engagement.id);
       setMessage(null);
@@ -62,7 +52,7 @@ export const EngagementsPage: React.FC<EngagementsPageProps> = ({
       });
       await loadEngagements();
       triggerRefresh();
-    } catch (err: any) {
+    } catch (err) {
       setMessage({
         text: err.message || 'Failed to generate next period',
         isError: true,

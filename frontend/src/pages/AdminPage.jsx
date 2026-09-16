@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Client, ServiceType, User } from '../types';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { 
@@ -8,20 +7,18 @@ import {
   Users, 
   Plus, 
   CheckCircle2, 
-  AlertCircle,
-  Clock,
-  ListOrdered
+  AlertCircle
 } from 'lucide-react';
 
-export const AdminPage: React.FC = () => {
+export const AdminPage = () => {
   const { user, allUsers } = useAuth();
-  const [activeTab, setActiveTab] = useState<'clients' | 'services' | 'users'>('clients');
+  const [activeTab, setActiveTab] = useState('clients');
 
-  const [clients, setClients] = useState<Client[]>([]);
-  const [services, setServices] = useState<ServiceType[]>([]);
+  const [clients, setClients] = useState([]);
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
   // New Client Form
   const [showClientModal, setShowClientModal] = useState(false);
@@ -36,8 +33,8 @@ export const AdminPage: React.FC = () => {
   const [serviceName, setServiceName] = useState('');
   const [serviceDesc, setServiceDesc] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
-  const [frequency, setFrequency] = useState<'ONE_TIME' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY'>('ONE_TIME');
-  const [templateRows, setTemplateRows] = useState<{ title: string; offsetDays: number }[]>([
+  const [frequency, setFrequency] = useState('ONE_TIME');
+  const [templateRows, setTemplateRows] = useState([
     { title: 'Initial Consultation & KYC', offsetDays: 3 },
     { title: 'Execution & Filing', offsetDays: 10 },
   ]);
@@ -48,7 +45,7 @@ export const AdminPage: React.FC = () => {
       const [cl, sv] = await Promise.all([api.getClients(), api.getServices()]);
       setClients(cl);
       setServices(sv);
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || 'Failed to load catalog data');
     } finally {
       setLoading(false);
@@ -59,7 +56,7 @@ export const AdminPage: React.FC = () => {
     loadData();
   }, []);
 
-  const handleCreateClient = async (e: React.FormEvent) => {
+  const handleCreateClient = async (e) => {
     e.preventDefault();
     try {
       setError(null);
@@ -78,12 +75,12 @@ export const AdminPage: React.FC = () => {
       setClientPhone('');
       setClientNotes('');
       await loadData();
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || 'Failed to create client');
     }
   };
 
-  const handleCreateService = async (e: React.FormEvent) => {
+  const handleCreateService = async (e) => {
     e.preventDefault();
     try {
       setError(null);
@@ -109,7 +106,7 @@ export const AdminPage: React.FC = () => {
         { title: 'Execution & Filing', offsetDays: 10 },
       ]);
       await loadData();
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || 'Failed to create service type');
     }
   };
@@ -118,11 +115,11 @@ export const AdminPage: React.FC = () => {
     setTemplateRows([...templateRows, { title: '', offsetDays: 7 }]);
   };
 
-  const removeTemplateRow = (index: number) => {
+  const removeTemplateRow = (index) => {
     setTemplateRows(templateRows.filter((_, i) => i !== index));
   };
 
-  const updateTemplateRow = (index: number, field: 'title' | 'offsetDays', val: any) => {
+  const updateTemplateRow = (index, field, val) => {
     const updated = [...templateRows];
     updated[index] = { ...updated[index], [field]: val };
     setTemplateRows(updated);
@@ -450,7 +447,7 @@ export const AdminPage: React.FC = () => {
                       <select
                         className="form-select"
                         value={frequency}
-                        onChange={(e) => setFrequency(e.target.value as any)}
+                        onChange={(e) => setFrequency(e.target.value)}
                       >
                         <option value="MONTHLY">Monthly</option>
                         <option value="QUARTERLY">Quarterly</option>

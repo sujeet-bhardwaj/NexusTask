@@ -79,7 +79,7 @@ npm test
 ## 📐 Core Architecture & Features
 
 ### 1. Technology Stack
-- **Frontend**: React 19, TypeScript, Vite, Vanilla CSS Design System with CSS variables and glassmorphism.
+- **Frontend**: React 19, JavaScript (JSX), Vite, Vanilla CSS Design System with CSS variables and glassmorphism.
 - **Backend**: Node.js, Express, TypeScript, Zod, JWT.
 - **Database**: SQLite with Prisma ORM (relational constraints, foreign keys, compound indexes, and `$transaction` guarantees).
 

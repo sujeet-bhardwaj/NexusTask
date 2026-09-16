@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { DashboardMetrics, Task } from '../types';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { MetricsCards } from '../components/MetricsCards';
@@ -8,27 +7,19 @@ import {
   Clock, 
   Eye, 
   UserX, 
-  Activity, 
-  ArrowRight,
-  ShieldCheck,
-  Calendar
+  Activity
 } from 'lucide-react';
 
-interface DashboardPageProps {
-  onSelectTask: (taskId: string) => void;
-  onNavigateToTasks: (filter?: string) => void;
-}
-
-export const DashboardPage: React.FC<DashboardPageProps> = ({ 
+export const DashboardPage = ({ 
   onSelectTask, 
   onNavigateToTasks 
 }) => {
   const { user } = useAuth();
-  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
-  const [urgentTasks, setUrgentTasks] = useState<Task[]>([]);
-  const [reviewTasks, setReviewTasks] = useState<Task[]>([]);
-  const [waitingClientTasks, setWaitingClientTasks] = useState<Task[]>([]);
+  const [metrics, setMetrics] = useState(null);
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [urgentTasks, setUrgentTasks] = useState([]);
+  const [reviewTasks, setReviewTasks] = useState([]);
+  const [waitingClientTasks, setWaitingClientTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const isManagerOrAdmin = user?.role === 'ADMIN' || user?.role === 'MANAGER';
@@ -61,7 +52,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     loadDashboardData();
   }, [user]);
 
-  const formatStatus = (s: string) => s.replace(/_/g, ' ');
+  const formatStatus = (s) => (s ? s.replace(/_/g, ' ') : '');
 
   return (
     <div>
@@ -140,7 +131,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                       </div>
                       <div className="task-meta">
                         <span style={{ color: 'var(--text-secondary)' }}>
-                          {t.engagement?.client.companyName}
+                          {t.engagement?.client?.companyName}
                         </span>
                         <span className="meta-item meta-overdue">
                           <Clock size={13} />
@@ -211,7 +202,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                         </span>
                       </div>
                       <div className="task-meta">
-                        <span>{t.engagement?.client.companyName}</span>
+                        <span>{t.engagement?.client?.companyName}</span>
                         <span>Submitted by: <strong>{t.assignedTo?.name || 'Team'}</strong></span>
                       </div>
                     </div>
@@ -284,7 +275,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                         </span>
                       </div>
                       <div className="task-meta">
-                        <span>{t.engagement?.client.companyName}</span>
+                        <span>{t.engagement?.client?.companyName}</span>
                         <span style={{ color: 'var(--text-muted)' }}>
                           Owner: <strong>{t.assignedTo?.name || 'Unassigned'}</strong>
                         </span>
