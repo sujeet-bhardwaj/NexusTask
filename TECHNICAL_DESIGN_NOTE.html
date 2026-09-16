@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Technical Design Note: Task & Engagement Management Tool (NexusTask)</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #3730a3;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --bg-subtle: #f8fafc;
+      --card-bg: #ffffff;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      background-color: #f1f5f9;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      padding: 50px 60px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--border);
+    }
+    .header-banner {
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 24px;
+      margin-bottom: 36px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      background: #eef2ff;
+      color: var(--primary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 2.2rem;
+      color: #0f172a;
+      line-height: 1.25;
+      margin-bottom: 12px;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+    h2 {
+      font-size: 1.45rem;
+      color: #0f172a;
+      margin-top: 40px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    h3 {
+      font-size: 1.15rem;
+      color: #334155;
+      margin-top: 24px;
+      margin-bottom: 12px;
+    }
+    p {
+      margin-bottom: 16px;
+      color: #334155;
+    }
+    ul, ol {
+      margin-left: 24px;
+      margin-bottom: 18px;
+      color: #334155;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+    pre {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 16px 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: "JetBrains Mono", Consolas, Menlo, monospace;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    code {
+      font-family: "JetBrains Mono", Consolas, Menlo, monospace;
+      font-size: 0.9em;
+      background: #f1f5f9;
+      color: #b91c1c;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 0.92rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+      text-align: left;
+    }
+    th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    tr:nth-child(even) td {
+      background: #fafbfc;
+    }
+    .callout {
+      background: #eef2ff;
+      border-left: 4px solid var(--primary);
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin: 20px 0;
+      font-size: 0.95rem;
+    }
+    .print-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--primary);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+      transition: background 0.2s;
+    }
+    .print-btn:hover {
+      background: var(--primary-dark);
+    }
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+      .container {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        max-width: 100%;
+      }
+      .print-btn {
+        display: none;
+      }
+      h2 {
+        page-break-after: avoid;
+      }
+      table, pre {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="print-btn" onclick="window.print()">🖨️ Save / Print as PDF</button>
+
+  <div class="container">
+    <div class="header-banner">
+      <div class="badge">NexusTask Architecture & Technical Design</div>
+      <h1>Technical Design Note: Task & Engagement Management Tool</h1>
+      <div class="meta">
+        <div><strong>System:</strong> NexusTask Professional Services Engine</div>
+        <div><strong>Frontend:</strong> React 19 + JavaScript (JSX) + Vite</div>
+        <div><strong>Backend:</strong> Node.js + Express + TypeScript + Prisma</div>
+        <div><strong>Date:</strong> September 2026</div>
+      </div>
+    </div>
+
+    <h2>1. System Architecture</h2>
+    <p>The system utilizes a modern decoupled three-tier architecture ensuring clean separation of concerns, strict boundary validation, and stateless scalability:</p>
+    <pre>
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            CLIENT TIER (Frontend)                           │
+│  React 19 + JavaScript (JSX) + Vite                                         │
+│  - Vanilla CSS Modern Design System (CSS Custom Properties & Glassmorphism)  │
+│  - Quick Persona Switcher (Admin, Manager, Team Member)                     │
+│  - Real-time Dashboard KPIs (5 Core Metrics), Task Lifecycles & Admin Catalog│
+└──────────────────────────────────────┬──────────────────────────────────────┘
+                                       │ HTTP / REST (JWT Bearer Auth)
+                                       ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          APPLICATION TIER (Backend)                         │
+│  Node.js + Express + TypeScript                                             │
+│  ┌──────────────────────────────┬────────────────────────────────────────┐  │
+│  │ Middlewares:                 │ Domain Services:                       │  │
+│  │  - Auth (JWT verify)         │  - WorkflowService (State Machine FSM) │  │
+│  │  - RoleGuard (RBAC)          │  - EngagementService (Recurring Roll)  │  │
+│  │  - Zod Request Validation    │  - TaskService (Filters & Assignments) │  │
+│  │  - Centralized Error Handler │  - DashboardService (KPI Aggregation)  │  │
+│  └──────────────────────────────┴────────────────────────────────────────┘  │
+└──────────────────────────────────────┬──────────────────────────────────────┘
+                                       │ Prisma ORM ($transaction, strict schema)
+                                       ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            DATA TIER (Database)                             │
+│  SQLite (Local/Dev/Test) / PostgreSQL (Cloud/Production)                    │
+│  - Tables: User, Client, ServiceType, TaskTemplate, Engagement, Task, Log   │
+│  - Compound Unique Constraints: @@unique([clientId, serviceTypeId, period]) │
+│  - Foreign Key Constraints & Composite Indexes                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+    </pre>
+
+    <h2>2. Database Schema & Relational Integrity</h2>
+    <p>All core relationships are managed through Prisma ORM with strict referential constraints:</p>
+    <ul>
+      <li><strong>Compound Unique Constraint:</strong> <code>Engagement: @@unique([clientId, serviceTypeId, period])</code> strictly guarantees that duplicate recurring engagements cannot be created for the same client, service, and period.</li>
+      <li><strong>Referential Actions:</strong> Deleting a client is protected with <code>onDelete: Restrict</code>. Deleting an engagement cascades cleanly to its child tasks and audit log entries (<code>onDelete: Cascade</code>).</li>
+      <li><strong>Performance Indexes:</strong> Added indexes on <code>Task(assignedToId)</code>, <code>Task(status)</code>, <code>Task(dueDate)</code>, and <code>TaskAuditLog(taskId)</code>.</li>
+    </ul>
+
+    <h2>3. Task Workflow Finite State Machine (FSM)</h2>
+    <p>Task lifecycle transitions strictly enforce organizational governance and prevent unauthorized status progression:</p>
+    <pre>
+[NOT_STARTED] ──> [IN_PROGRESS] ──> [READY_FOR_REVIEW] ──> [COMPLETED] (Manager Only!)
+                        │                   │
+                        ▼                   ▼
+              [WAITING_FOR_CLIENT]   [CHANGES_REQUESTED]
+                        │                   │
+                        └──> [IN_PROGRESS] <──┘
+    </pre>
+
+    <h3>FSM Transition Governance Rules</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Transition</th>
+          <th>Allowed Roles</th>
+          <th>Validation / Pre-conditions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>NOT_STARTED</code> &rarr; <code>IN_PROGRESS</code></td>
+          <td>Assigned Member, Manager, Admin</td>
+          <td>Marks task execution commencement.</td>
+        </tr>
+        <tr>
+          <td><code>IN_PROGRESS</code> &rarr; <code>WAITING_FOR_CLIENT</code></td>
+          <td>Assigned Member, Manager, Admin</td>
+          <td>Client input or documentation requested.</td>
+        </tr>
+        <tr>
+          <td><code>WAITING_FOR_CLIENT</code> &rarr; <code>IN_PROGRESS</code></td>
+          <td>Assigned Member, Manager, Admin</td>
+          <td>Client provided required information.</td>
+        </tr>
+        <tr>
+          <td><code>IN_PROGRESS</code> &rarr; <code>READY_FOR_REVIEW</code></td>
+          <td>Assigned Member, Manager, Admin</td>
+          <td>Work submitted for management audit.</td>
+        </tr>
+        <tr>
+          <td><code>READY_FOR_REVIEW</code> &rarr; <code>CHANGES_REQUESTED</code></td>
+          <td>Manager, Admin (Team Member Forbidden)</td>
+          <td><strong>Mandatory review feedback notes required.</strong></td>
+        </tr>
+        <tr>
+          <td><code>READY_FOR_REVIEW</code> &rarr; <code>COMPLETED</code></td>
+          <td>Manager, Admin (Team Member Forbidden)</td>
+          <td><strong>Self-approval rejected!</strong> Prevents specialists from approving own work.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>4. Authentication, Authorization & Roles</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Role</th>
+          <th>Permissions & Capabilities</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>ADMIN</strong></td>
+          <td>Full system control, manage clients, configure service templates, view all engagements, override task assignments and workflows.</td>
+        </tr>
+        <tr>
+          <td><strong>MANAGER</strong></td>
+          <td>Create engagements, generate recurring periods, assign/reassign tasks, review and approve work, request changes with feedback notes.</td>
+        </tr>
+        <tr>
+          <td><strong>TEAM_MEMBER</strong></td>
+          <td>View assigned tasks, advance work to in-progress, flag waiting for client, submit work for review. Cannot self-approve or reassign other members' tasks.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>5. Automated Backend Test Suite (12 Tests)</h2>
+    <p>Integration test suite running on <strong>Vitest</strong> and <strong>Supertest</strong> verifies all assignment requirements:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Requirement Verified</th>
+          <th>Expected Response</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>Unauthorized task update is rejected</td><td><code>403 Forbidden</code></td></tr>
+        <tr><td>2</td><td>Unauthorized task assignment is rejected</td><td><code>403 Forbidden</code></td></tr>
+        <tr><td>3</td><td>Duplicate recurring engagement is rejected</td><td><code>409 Conflict</code></td></tr>
+        <tr><td>4</td><td>Duplicate next period generation is rejected</td><td><code>409 Conflict</code></td></tr>
+        <tr><td>5</td><td>Direct jump from <code>NOT_STARTED</code> to <code>COMPLETED</code></td><td><code>400 Bad Request</code></td></tr>
+        <tr><td>6</td><td>Direct jump from <code>NOT_STARTED</code> to <code>READY_FOR_REVIEW</code></td><td><code>400 Bad Request</code></td></tr>
+        <tr><td>7</td><td>Valid status transition <code>NOT_STARTED</code> &rarr; <code>IN_PROGRESS</code></td><td><code>200 OK</code></td></tr>
+        <tr><td>8</td><td>Waiting for client workflow loop</td><td><code>200 OK</code></td></tr>
+        <tr><td>9</td><td>Team member self-approval rejected</td><td><code>403 Forbidden</code></td></tr>
+        <tr><td>10</td><td>Manager approval records audit log</td><td><code>200 OK</code></td></tr>
+        <tr><td>11</td><td>Manager change request requires feedback notes</td><td><code>400 Bad Request</code> (if empty)</td></tr>
+        <tr><td>12</td><td>Dashboard 5 KPI metrics calculation accuracy</td><td><code>200 OK</code> with correct counts</td></tr>
+      </tbody>
+    </table>
+
+    <h2>6. Production Scaling Strategy (5 Million Tasks)</h2>
+    <ul>
+      <li><strong>Partitioning & Partial Indexes:</strong> Range partitioning by <code>created_at</code>; partial indexes on <code>WHERE status != 'COMPLETED'</code> for fast operational queries.</li>
+      <li><strong>Cursor-based Pagination:</strong> Keyset pagination on <code>(due_date, id)</code> eliminating expensive SQL <code>OFFSET</code> queries.</li>
+      <li><strong>Distributed Background Queues:</strong> Offloading recurring period roll-overs to BullMQ / Redis queues with automatic retries and dead-letter queues.</li>
+      <li><strong>Metric Caching:</strong> Real-time aggregate count caching in Redis with atomic increments (<code>HINCRBY</code>) on status transitions.</li>
+    </ul>
+  </div>
+</body>
+</html>

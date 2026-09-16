@@ -6,6 +6,8 @@ import taskRoutes from './routes/taskRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
 import clientRoutes from './routes/clientRoutes';
 import serviceRoutes from './routes/serviceRoutes';
+import path from 'path';
+import fs from 'fs';
 import { errorHandler } from './middleware/errorHandler';
 
 export const createApp = () => {
@@ -34,6 +36,18 @@ export const createApp = () => {
   app.use('/api/dashboard', dashboardRoutes);
   app.use('/api/clients', clientRoutes);
   app.use('/api/services', serviceRoutes);
+
+  // Serve Frontend Production Assets (Single-port Full-stack Serving)
+  const frontendDist = path.resolve(__dirname, '../../frontend/dist');
+  if (fs.existsSync(frontendDist)) {
+    app.use(express.static(frontendDist));
+    app.get('*', (req, res, next) => {
+      if (req.path.startsWith('/api')) {
+        return next();
+      }
+      res.sendFile(path.join(frontendDist, 'index.html'));
+    });
+  }
 
   // Global Error Handler
   app.use(errorHandler);

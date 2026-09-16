@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: nexustask-app
+    runtime: node
+    plan: free
+    buildCommand: npm run setup && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
